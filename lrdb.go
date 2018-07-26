@@ -50,9 +50,7 @@ func (db *LRDB) Handle(conn io.ReadWriteCloser) error {
 
 		result, err := db.engine.Cmd(reply)
 		if err != nil {
-			conn.Close()
-			ffmt.Mark(err)
-			return err
+			result = resp.ReplyError(err.Error())
 		}
 
 		err = encoder.Encode(result)
