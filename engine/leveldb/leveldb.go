@@ -38,6 +38,7 @@ func NewLevelDB(path string) (*LevelDB, error) {
 }
 
 func (c *LevelDB) init() {
+	c.method["info"] = c.info
 	c.method["get"] = c.get
 	c.method["set"] = c.set
 	c.method["del"] = c.del
@@ -70,17 +71,13 @@ func (c *LevelDB) cmd(args []resp.Reply) (resp.Reply, error) {
 	}
 }
 
-func (c *LevelDB) get(args []resp.Reply) (resp.Reply, error) {
-	switch len(args) {
-	default:
-		return nil, ErrWrongNumberOfArguments
-	case 1:
-		val, err := c.db.Get(toBytes(args[0]), nil)
-		if err != nil {
-			return nil, err
-		}
-		return resp.ReplyBulk(val), nil
+func (c *LevelDB) info(args []resp.Reply) (resp.Reply, error) {
+	stats := &leveldb.DBStats{}
+	err := c.db.Stats(stats)
+	if err != nil {
+		return nil, err
 	}
+	return resp.Convert(stats), nil
 }
 
 func (c *LevelDB) get(args []resp.Reply) (resp.Reply, error) {
