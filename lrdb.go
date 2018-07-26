@@ -4,13 +4,18 @@ import (
 	"io"
 	"net"
 
-	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/wzshiming/resp"
 	"gopkg.in/ffmt.v1"
 )
 
 type LRDB struct {
-	db *leveldb.DB
+	engine Engine
+}
+
+func NewLRDB(engine Engine) *LRDB {
+	return &LRDB{
+		engine: engine,
+	}
 }
 
 func (db *LRDB) Listen(address string) error {
@@ -42,7 +47,15 @@ func (db *LRDB) Handle(conn io.ReadWriteCloser) error {
 			ffmt.Mark(err)
 			return err
 		}
-		err := encoder.Encode(reply)
+
+		result, err := db.engine.Cmd(reply)
+		if err != nil {
+			conn.Close()
+			ffmt.Mark(err)
+			return err
+		}
+
+		err = encoder.Encode(result)
 		if err != nil {
 			conn.Close()
 			ffmt.Mark(err)
