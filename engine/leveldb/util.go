@@ -7,6 +7,11 @@ import (
 	"github.com/wzshiming/resp"
 )
 
+var (
+	zero = resp.Convert(0)
+	one  = resp.Convert(1)
+)
+
 // bytesPrefix returns key range that satisfy the given prefix.
 func bytesPrefix(prefix []byte) *util.Range {
 	var limit []byte
@@ -67,4 +72,27 @@ func cloneBytes(data []byte) []byte {
 	buf := make([]byte, len(data))
 	copy(buf, data)
 	return buf
+}
+
+func getBit(i int) byte {
+	switch i {
+	default:
+		return 0
+	case 0:
+		return 1 << 0
+	case 1:
+		return 1 << 1
+	case 2:
+		return 1 << 2
+	case 3:
+		return 1 << 3
+	case 4:
+		return 1 << 4
+	case 5:
+		return 1 << 5
+	case 6:
+		return 1 << 6
+	case 7:
+		return 1 << 7
+	}
 }
