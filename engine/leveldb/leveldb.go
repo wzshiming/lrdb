@@ -1,8 +1,6 @@
 package leveldb
 
 import (
-	"bytes"
-
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"github.com/wzshiming/lrdb/engine"
@@ -146,14 +144,20 @@ func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 
 	iter := c.db.NewIterator(urange, nil)
-	for i := int64(0); i != size && iter.Next(); i++ {
-		key := cloneBytes(iter.Key())
-		if i == 0 && bytes.Equal(urange.Start, key) {
-			continue
-		}
-		multiBulk = append(multiBulk, resp.ReplyBulk(key))
+	defer iter.Release()
+
+	if !iter.First() {
+		return multiBulk, nil
 	}
-	iter.Release()
+
+	for i := int64(0); i != size; i++ {
+		key := cloneBytes(iter.Key())
+		multiBulk = append(multiBulk, resp.ReplyBulk(key))
+		if !iter.Next() {
+			break
+		}
+	}
+
 	if err := iter.Error(); err != nil {
 		return nil, err
 	}
@@ -188,19 +192,23 @@ func (c *LevelDB) rkeys(name string, args []resp.Reply) (resp.Reply, error) {
 		return multiBulk, nil
 	}
 	iter := c.db.NewIterator(urange, nil)
-	if iter.Last() {
-		for i := int64(0); i != size; i++ {
-			key := cloneBytes(iter.Key())
-			multiBulk = append(multiBulk, resp.ReplyBulk(key))
-			if !iter.Prev() {
-				break
-			}
-		}
-		iter.Release()
-		if err := iter.Error(); err != nil {
-			return nil, err
+	defer iter.Release()
+
+	if !iter.Last() {
+		return multiBulk, nil
+	}
+
+	for i := int64(0); i != size; i++ {
+		key := cloneBytes(iter.Key())
+		multiBulk = append(multiBulk, resp.ReplyBulk(key))
+		if !iter.Prev() {
+			break
 		}
 	}
+	if err := iter.Error(); err != nil {
+		return nil, err
+	}
+
 	return multiBulk, nil
 }
 
@@ -229,14 +237,20 @@ func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 
 	iter := c.db.NewIterator(urange, nil)
-	for i := int64(0); i != size && iter.Next(); i++ {
-		key := cloneBytes(iter.Value())
-		if i == 0 && bytes.Equal(urange.Start, key) {
-			continue
-		}
-		multiBulk = append(multiBulk, resp.ReplyBulk(key))
+	defer iter.Release()
+
+	if !iter.First() {
+		return multiBulk, nil
 	}
-	iter.Release()
+
+	for i := int64(0); i != size; i++ {
+		key := cloneBytes(iter.Value())
+		multiBulk = append(multiBulk, resp.ReplyBulk(key))
+		if !iter.Next() {
+			break
+		}
+	}
+
 	if err := iter.Error(); err != nil {
 		return nil, err
 	}
@@ -271,18 +285,22 @@ func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
 		return multiBulk, nil
 	}
 	iter := c.db.NewIterator(urange, nil)
-	if iter.Last() {
-		for i := int64(0); i != size; i++ {
-			key := cloneBytes(iter.Value())
-			multiBulk = append(multiBulk, resp.ReplyBulk(key))
-			if !iter.Prev() {
-				break
-			}
-		}
-		iter.Release()
-		if err := iter.Error(); err != nil {
-			return nil, err
+	defer iter.Release()
+
+	if !iter.Last() {
+		return multiBulk, nil
+	}
+
+	for i := int64(0); i != size; i++ {
+		key := cloneBytes(iter.Value())
+		multiBulk = append(multiBulk, resp.ReplyBulk(key))
+		if !iter.Prev() {
+			break
 		}
 	}
+	if err := iter.Error(); err != nil {
+		return nil, err
+	}
+
 	return multiBulk, nil
 }
