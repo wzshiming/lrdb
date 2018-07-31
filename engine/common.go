@@ -1,24 +1,37 @@
 package engine
 
 import (
+	"time"
+
 	"github.com/wzshiming/resp"
 )
 
-func echo(name string, args []resp.Reply) (resp.Reply, error) {
+func cmdEcho(name string, args []resp.Reply) (resp.Reply, error) {
 	return resp.ReplyMultiBulk(args), nil
 }
 
-func ping(name string, args []resp.Reply) (resp.Reply, error) {
+func cmdPing(name string, args []resp.Reply) (resp.Reply, error) {
 	return PONG, nil
 }
 
-func quit(name string, args []resp.Reply) (resp.Reply, error) {
+func cmdQuit(name string, args []resp.Reply) (resp.Reply, error) {
 	return OK, nil
 }
 
-func Registe(commands *Commands) {
-	commands.AddCommand("echo", echo)
-	commands.AddCommand("ping", ping)
-	commands.AddCommand("quit", quit)
+func cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
+	un := time.Now().UnixNano()
+	nano := un % 1e9
+	unix := un / 1e9
+
+	return resp.Convert([]int64{
+		unix,
+		nano,
+	}), nil
 }
 
+func Registe(commands *Commands) {
+	commands.AddCommand("echo", cmdEcho)
+	commands.AddCommand("ping", cmdPing)
+	commands.AddCommand("quit", cmdQuit)
+	commands.AddCommand("time", cmdTime)
+}
