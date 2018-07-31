@@ -4,12 +4,9 @@ import (
 	"github.com/wzshiming/resp"
 )
 
+type Cmd func(name string, args []resp.Reply) (resp.Reply, error)
+
 type Engine interface {
-	Cmd(resp.Reply) (resp.Reply, error)
-}
-
-type Echo struct{}
-
-func (Echo) Cmd(r resp.Reply) (resp.Reply, error) {
-	return r, nil
+	RawCmd(resp.Reply) (resp.Reply, error)
+	Cmd(name string, args []resp.Reply) (resp.Reply, error)
 }

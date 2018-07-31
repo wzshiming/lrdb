@@ -48,7 +48,7 @@ func (db *LRDB) Handle(conn io.ReadWriteCloser) error {
 			return err
 		}
 
-		result, err := db.engine.Cmd(reply)
+		result, err := db.engine.RawCmd(reply)
 		if err != nil {
 			result = resp.ReplyError(err.Error())
 		}
