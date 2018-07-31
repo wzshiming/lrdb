@@ -244,8 +244,10 @@ func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 
 	for i := int64(0); i != size; i++ {
-		key := cloneBytes(iter.Value())
-		multiBulk = append(multiBulk, resp.ReplyBulk(key))
+		data := cloneBytes(iter.Key())
+		multiBulk = append(multiBulk, resp.ReplyBulk(data))
+		data = cloneBytes(iter.Value())
+		multiBulk = append(multiBulk, resp.ReplyBulk(data))
 		if !iter.Next() {
 			break
 		}
@@ -292,8 +294,10 @@ func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 
 	for i := int64(0); i != size; i++ {
-		key := cloneBytes(iter.Value())
-		multiBulk = append(multiBulk, resp.ReplyBulk(key))
+		data := cloneBytes(iter.Key())
+		multiBulk = append(multiBulk, resp.ReplyBulk(data))
+		data = cloneBytes(iter.Value())
+		multiBulk = append(multiBulk, resp.ReplyBulk(data))
 		if !iter.Prev() {
 			break
 		}
