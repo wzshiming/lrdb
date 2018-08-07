@@ -11,20 +11,20 @@ LRDB is a high performace key-value NoSQL database, an alternative to Redis.
 ## Usage
 
 ``` sh
-$ go install github.com/wzshiming/lrdb/cmd/lrdb
+$ go get -v github.com/wzshiming/lrdb/cmd/lrdb
 
-$ nohup lrdb -port 10008 -path ./data &
+$ nohup lrdb -port :10008 -path ./data &
 
-$ go install github.com/wzshiming/resp/cmd/resp
+$ go get -v github.com/wzshiming/resp/cmd/resp
 
 $ resp 127.0.0.1:10008
 
 RESP 127.0.0.1:10008> set foo bar
 (Status) OK
-(2ms)
+(1ms)
 RESP 127.0.0.1:10008> get foo
 "bar"
-(2ms)
+(1ms)
 RESP 127.0.0.1:10008>
 
 ```
