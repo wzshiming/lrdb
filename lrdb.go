@@ -44,7 +44,6 @@ func (db *LRDB) Handle(conn io.ReadWriteCloser) error {
 		reply, err := decoder.Decode()
 		if err != nil {
 			conn.Close()
-			ffmt.Mark(err)
 			return err
 		}
 
@@ -56,7 +55,6 @@ func (db *LRDB) Handle(conn io.ReadWriteCloser) error {
 		err = encoder.Encode(result)
 		if err != nil {
 			conn.Close()
-			ffmt.Mark(err)
 			return err
 		}
 	}

@@ -8,13 +8,20 @@ import (
 )
 
 func cmdEcho(name string, args []resp.Reply) (resp.Reply, error) {
-	return resp.ReplyMultiBulk(args), nil
+	switch len(args) {
+	default:
+		return nil, ErrWrongNumberOfArguments
+	case 1:
+		return args[0], nil
+	}
 }
 
 func cmdPing(name string, args []resp.Reply) (resp.Reply, error) {
 	switch len(args) {
 	default:
-		return resp.ReplyMultiBulk(args), nil
+		return nil, ErrWrongNumberOfArguments
+	case 1:
+		return args[0], nil
 	case 0:
 		return reply.PONG, nil
 	}
