@@ -11,5 +11,5 @@ func (c *LevelDB) info(name string, args []resp.Reply) (resp.Reply, error) {
 	if err != nil {
 		return nil, err
 	}
-	return resp.Convert(stats), nil
+	return resp.ConvertTo(stats)
 }

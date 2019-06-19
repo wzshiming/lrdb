@@ -12,7 +12,12 @@ func cmdEcho(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func cmdPing(name string, args []resp.Reply) (resp.Reply, error) {
-	return reply.PONG, nil
+	switch len(args) {
+	default:
+		return resp.ReplyMultiBulk(args), nil
+	case 0:
+		return reply.PONG, nil
+	}
 }
 
 func cmdQuit(name string, args []resp.Reply) (resp.Reply, error) {
@@ -24,10 +29,10 @@ func cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
 	nano := int64(un.Nanosecond())
 	unix := un.Unix()
 
-	return resp.Convert([]int64{
+	return resp.ConvertTo([]int64{
 		unix,
 		nano,
-	}), nil
+	})
 }
 
 func Registe(commands *Commands) {

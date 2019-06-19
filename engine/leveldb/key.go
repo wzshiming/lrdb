@@ -101,7 +101,7 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 			return nil, err
 		}
 	}
-	return resp.Convert(len(args)), nil
+	return resp.ConvertTo(len(args))
 }
 
 func (c *LevelDB) exists(name string, args []resp.Reply) (resp.Reply, error) {
@@ -115,7 +115,7 @@ func (c *LevelDB) exists(name string, args []resp.Reply) (resp.Reply, error) {
 			sum++
 		}
 	}
-	return resp.Convert(sum), nil
+	return resp.ConvertTo(sum)
 }
 
 func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
@@ -316,7 +316,7 @@ func (c *LevelDB) bitcount(name string, args []resp.Reply) (resp.Reply, error) {
 		key := toBytes(args[0])
 		val, err := c.db.Get(key, nil)
 		if err != nil {
-			return zero, nil
+			return reply.Zero, nil
 		}
 
 		var sum uint64
@@ -327,7 +327,7 @@ func (c *LevelDB) bitcount(name string, args []resp.Reply) (resp.Reply, error) {
 				}
 			}
 		}
-		return resp.Convert(sum), nil
+		return resp.ConvertTo(sum)
 	}
 }
 
@@ -339,24 +339,24 @@ func (c *LevelDB) getbit(name string, args []resp.Reply) (resp.Reply, error) {
 		key := toBytes(args[0])
 		offset := toInteger(args[1])
 		if offset < 0 {
-			return zero, nil
+			return reply.Zero, nil
 		}
 		val, err := c.db.Get(key, nil)
 		if err != nil {
-			return zero, nil
+			return reply.Zero, nil
 		}
 		index := offset / 8
 
 		if int64(len(val)) <= index {
-			return zero, nil
+			return reply.Zero, nil
 		}
 
 		off := getBit(int(offset % 8))
 
 		if val[index]&off == 0 {
-			return zero, nil
+			return reply.Zero, nil
 		}
-		return one, nil
+		return reply.One, nil
 	}
 }
 
@@ -368,7 +368,7 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 		key := toBytes(args[0])
 		offset := toInteger(args[1])
 		if offset < 0 {
-			return zero, nil
+			return reply.Zero, nil
 		}
 		flag := toInteger(args[2])
 		newflage := flag != 0
@@ -389,7 +389,7 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 		oldflag := val[index]&off != 0
 		if newflage == oldflag {
 			tran.Discard()
-			return zero, nil
+			return reply.Zero, nil
 		}
 		if newflage {
 			val[index] |= off
@@ -404,7 +404,7 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		return one, nil
+		return reply.One, nil
 	}
 }
 
@@ -430,7 +430,7 @@ func (c *LevelDB) append(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		return one, nil
+		return reply.One, nil
 	}
 }
 
@@ -441,6 +441,6 @@ func (c *LevelDB) strlen(name string, args []resp.Reply) (resp.Reply, error) {
 	case 1:
 		key := toBytes(args[0])
 		val, _ := c.db.Get(key, nil)
-		return resp.Convert(len(val)), nil
+		return resp.ConvertTo(len(val))
 	}
 }
