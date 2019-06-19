@@ -134,20 +134,17 @@ func (c *LevelDB) exists(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
-	urange := &util.Range{}
-	size := int64(math.MaxInt64)
+
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		size0, err := toInteger(args[2])
-		if err != nil {
-			return nil, err
-		}
-		size = size0
-	case 2:
-		// No action
 	}
+	size, err := toInteger(args[2])
+	if err != nil {
+		return nil, err
+	}
+	urange := &util.Range{}
 
 	start := toBytes(args[0])
 	limit := toBytes(args[1])
@@ -186,20 +183,17 @@ func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func (c *LevelDB) rkeys(name string, args []resp.Reply) (resp.Reply, error) {
-	urange := &util.Range{}
-	size := int64(math.MaxInt64)
+
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		size0, err := toInteger(args[2])
-		if err != nil {
-			return nil, err
-		}
-		size = size0
-	case 2:
-		// No action
 	}
+	size, err := toInteger(args[2])
+	if err != nil {
+		return nil, err
+	}
+	urange := &util.Range{}
 
 	start := toBytes(args[1])
 	limit := toBytes(args[0])
@@ -239,20 +233,17 @@ func (c *LevelDB) rkeys(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
-	urange := &util.Range{}
-	size := int64(math.MaxInt64)
+
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		size0, err := toInteger(args[2])
-		if err != nil {
-			return nil, err
-		}
-		size = size0
-	case 2:
-		// No action
 	}
+	size, err := toInteger(args[2])
+	if err != nil {
+		return nil, err
+	}
+	urange := &util.Range{}
 
 	start := toBytes(args[0])
 	limit := toBytes(args[1])
@@ -293,20 +284,17 @@ func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
-	urange := &util.Range{}
-	size := int64(math.MaxInt64)
+
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		size0, err := toInteger(args[2])
-		if err != nil {
-			return nil, err
-		}
-		size = size0
-	case 2:
-		// No action
 	}
+	size, err := toInteger(args[2])
+	if err != nil {
+		return nil, err
+	}
+	urange := &util.Range{}
 
 	start := toBytes(args[1])
 	limit := toBytes(args[0])
