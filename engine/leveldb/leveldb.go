@@ -32,14 +32,17 @@ func (c *LevelDB) Cmd() *engine.Commands {
 	commands.AddCommand("append", c.append)
 	commands.AddCommand("strlen", c.strlen)
 
-	commands.AddCommand("keys", c.keys)
-	commands.AddCommand("rkeys", c.rkeys)
-	commands.AddCommand("scan", c.scan)
-	commands.AddCommand("rscan", c.rscan)
 	commands.AddCommand("get", c.get)
 	commands.AddCommand("set", c.set)
 	commands.AddCommand("getset", c.getset)
 	commands.AddCommand("del", c.del)
 	commands.AddCommand("exists", c.exists)
+	commands.AddCommand("rename", c.rename)
+
+	commands.AddCommand("keys", c.keys)
+	commands.AddCommand("rkeys", c.rkeys)
+	commands.AddCommand("scan", c.scan)
+	commands.AddCommand("rscan", c.rscan)
+
 	return commands
 }
