@@ -3,6 +3,7 @@ package leveldb
 import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"github.com/wzshiming/lrdb/engine"
+	"github.com/wzshiming/lrdb/reply"
 	"github.com/wzshiming/resp"
 )
 
@@ -31,7 +32,7 @@ func (c *LevelDB) set(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		return engine.OK, nil
+		return reply.OK, nil
 	}
 }
 
@@ -89,7 +90,7 @@ func (c *LevelDB) rename(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		return engine.OK, nil
+		return reply.OK, nil
 	}
 }
 

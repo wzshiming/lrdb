@@ -3,6 +3,7 @@ package engine
 import (
 	"time"
 
+	"github.com/wzshiming/lrdb/reply"
 	"github.com/wzshiming/resp"
 )
 
@@ -11,11 +12,11 @@ func cmdEcho(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func cmdPing(name string, args []resp.Reply) (resp.Reply, error) {
-	return PONG, nil
+	return reply.PONG, nil
 }
 
 func cmdQuit(name string, args []resp.Reply) (resp.Reply, error) {
-	return OK, nil
+	return reply.OK, nil
 }
 
 func cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
