@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"strings"
 	"unsafe"
 
 	"github.com/wzshiming/lrdb"
@@ -54,6 +55,7 @@ func (c *Commands) cmd(args []resp.Reply) (resp.Reply, error) {
 		return nil, ErrUnsupportedForm
 	case resp.ReplyBulk:
 		command := *(*string)(unsafe.Pointer(&t))
+		command = strings.ToLower(command)
 		return c.Cmd(command, args[1:])
 	}
 }
