@@ -159,7 +159,7 @@ func (c *Client) BitCount(k string) (b int, err error) {
 
 // BitCountRange Like BitCount.
 // It is possible to specify the counting operation only in an interval passing the additional arguments start and end.
-func (c *Client) BitCountRange(k string, start uint, end uint) (b int, err error) {
+func (c *Client) BitCountRange(k string, start int, end int) (b int, err error) {
 	return b, c.Execute([]interface{}{"bitcount", k, start, end}, &b)
 }
 
@@ -172,4 +172,24 @@ func (c *Client) Append(k string, v string) (b int, err error) {
 // StrLen Returns the length of the string value stored at key.
 func (c *Client) StrLen(k string) (b int, err error) {
 	return b, c.Execute([]string{"strlen", k}, &b)
+}
+
+// Keys key-value pairs with keys in range (key_start, key_end]. ("", ""] means no range limit.
+func (c *Client) Keys(start, end string, limit int) (b []string, err error) {
+	return b, c.Execute([]interface{}{"keys", start, end, limit}, &b)
+}
+
+// RKeys Like keys, but in reverse order.
+func (c *Client) RKeys(start, end string, limit int) (b []string, err error) {
+	return b, c.Execute([]interface{}{"rkeys", start, end, limit}, &b)
+}
+
+// Scan key-value pairs with keys and values in range (key_start, key_end]. ("", ""] means no range limit.
+func (c *Client) Scan(start, end string, limit int) (m map[string]string, err error) {
+	return m, c.Execute([]interface{}{"scan", start, end, limit}, &m)
+}
+
+// RScan key-value pairs with keys and values in range (key_start, key_end]. ("", ""] means no range limit.
+func (c *Client) RScan(start, end string, limit int) (m map[string]string, err error) {
+	return m, c.Execute([]interface{}{"rscan", start, end, limit}, &m)
 }
