@@ -7,11 +7,6 @@ import (
 	"github.com/wzshiming/resp"
 )
 
-var (
-	zero = resp.Convert(0)
-	one  = resp.Convert(1)
-)
-
 // bytesPrefix returns key range that satisfy the given prefix.
 func bytesPrefix(prefix []byte) *util.Range {
 	var limit []byte
