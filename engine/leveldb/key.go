@@ -135,7 +135,7 @@ func (c *LevelDB) exists(name string, args []resp.Reply) (resp.Reply, error) {
 
 func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
 	urange := &util.Range{}
-	size := int64(-1)
+	size := int64(math.MaxInt64)
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
@@ -187,7 +187,7 @@ func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
 
 func (c *LevelDB) rkeys(name string, args []resp.Reply) (resp.Reply, error) {
 	urange := &util.Range{}
-	size := int64(-1)
+	size := int64(math.MaxInt64)
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
@@ -240,7 +240,7 @@ func (c *LevelDB) rkeys(name string, args []resp.Reply) (resp.Reply, error) {
 
 func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
 	urange := &util.Range{}
-	size := int64(-1)
+	size := int64(math.MaxInt64)
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
@@ -294,7 +294,7 @@ func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
 
 func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
 	urange := &util.Range{}
-	size := int64(-1)
+	size := int64(math.MaxInt64)
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
@@ -348,8 +348,8 @@ func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
 
 func (c *LevelDB) bitcount(name string, args []resp.Reply) (resp.Reply, error) {
 
-	var start int64
-	var end int64 = math.MaxInt64 - 1
+	start := int64(0)
+	end := int64(math.MaxInt64 - 1)
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
