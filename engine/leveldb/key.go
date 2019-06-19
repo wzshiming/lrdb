@@ -62,6 +62,37 @@ func (c *LevelDB) getset(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 }
 
+func (c *LevelDB) rename(name string, args []resp.Reply) (resp.Reply, error) {
+	switch len(args) {
+	default:
+		return nil, engine.ErrWrongNumberOfArguments
+	case 2:
+		key := toBytes(args[0])
+		newKey := toBytes(args[1])
+		tran, err := c.db.OpenTransaction()
+		if err != nil {
+			return nil, err
+		}
+		val, err := tran.Get(key, nil)
+		if err != nil {
+			return nil, err
+		}
+		err = tran.Put(newKey, val, nil)
+		if err != nil {
+			return nil, err
+		}
+		err = tran.Delete(key, nil)
+		if err != nil {
+			return nil, err
+		}
+		err = tran.Commit()
+		if err != nil {
+			return nil, err
+		}
+		return engine.OK, nil
+	}
+}
+
 func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 	for _, arg := range args {
 		err := c.db.Delete(toBytes(arg), nil)
