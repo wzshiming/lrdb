@@ -49,18 +49,15 @@ func (c *LevelDB) getset(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		newVal, err := tran.Get(key, nil)
-		if err != nil {
-			return nil, err
-		}
+		defer tran.Commit()
+
+		newVal, _ := tran.Get(key, nil)
+
 		err = tran.Put(key, val, nil)
 		if err != nil {
 			return nil, err
 		}
-		err = tran.Commit()
-		if err != nil {
-			return nil, err
-		}
+
 		return resp.ReplyBulk(newVal), nil
 	}
 }
@@ -76,6 +73,8 @@ func (c *LevelDB) rename(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer tran.Commit()
+
 		val, err := tran.Get(key, nil)
 		if err != nil {
 			return nil, err
@@ -88,10 +87,7 @@ func (c *LevelDB) rename(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = tran.Commit()
-		if err != nil {
-			return nil, err
-		}
+
 		return reply.OK, nil
 	}
 }
@@ -101,6 +97,8 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer tran.Commit()
+
 	keys := make([][]byte, 0, len(args))
 	for _, arg := range args {
 		key := toBytes(arg)
@@ -454,6 +452,8 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer tran.Commit()
+
 		val, _ := tran.Get(key, nil)
 
 		index := offset / 8
@@ -503,16 +503,15 @@ func (c *LevelDB) append(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer tran.Commit()
+
 		val, _ := tran.Get(key, nil)
 		val = append(val, str...)
 		err = tran.Put(key, val, nil)
 		if err != nil {
 			return nil, err
 		}
-		err = tran.Commit()
-		if err != nil {
-			return nil, err
-		}
+
 		return resp.ConvertTo(len(val))
 	}
 }
