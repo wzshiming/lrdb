@@ -47,20 +47,16 @@ func toBytes(r resp.Reply) []byte {
 	}
 }
 
-func toInteger(r resp.Reply) int64 {
-	var b []byte
-	switch t := r.(type) {
-	case resp.ReplyBulk:
-		b = []byte(t)
-	case resp.ReplyInteger:
-		b = []byte(t)
-	default:
-	}
+func toInteger(r resp.Reply) (int64, error) {
+	b := toBytes(r)
 	if b == nil {
-		return 0
+		return 0, nil
 	}
-	i, _ := strconv.ParseInt(string(b), 10, 64)
-	return i
+	i, err := strconv.ParseInt(string(b), 0, 0)
+	if err != nil {
+		return 0, err
+	}
+	return i, nil
 }
 
 func cloneBytes(data []byte) []byte {

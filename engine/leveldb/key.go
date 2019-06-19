@@ -125,18 +125,24 @@ func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		size = toInteger(args[2])
-		fallthrough
+		size0, err := toInteger(args[2])
+		if err != nil {
+			return nil, err
+		}
+		size = size0
 	case 2:
-		start := toBytes(args[0])
-		limit := toBytes(args[1])
-		if len(start) != 0 {
-			urange.Start = bytesNext(start)
-		}
-		if len(limit) != 0 {
-			urange.Limit = bytesNext(limit)
-		}
+		// No action
 	}
+
+	start := toBytes(args[0])
+	limit := toBytes(args[1])
+	if len(start) != 0 {
+		urange.Start = bytesNext(start)
+	}
+	if len(limit) != 0 {
+		urange.Limit = bytesNext(limit)
+	}
+
 	multiBulk := resp.ReplyMultiBulk{}
 	if size == 0 {
 		return multiBulk, nil
@@ -171,21 +177,27 @@ func (c *LevelDB) rkeys(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		size = toInteger(args[2])
-		fallthrough
+		size0, err := toInteger(args[2])
+		if err != nil {
+			return nil, err
+		}
+		size = size0
 	case 2:
-		start := toBytes(args[1])
-		limit := toBytes(args[0])
-		if len(start) != 0 {
-			urange.Start = start
-		}
-		if len(limit) != 0 {
-			urange.Limit = limit
-		}
-		if len(start)+len(limit) == 0 {
-			urange = nil
-		}
+		// No action
 	}
+
+	start := toBytes(args[1])
+	limit := toBytes(args[0])
+	if len(start) != 0 {
+		urange.Start = start
+	}
+	if len(limit) != 0 {
+		urange.Limit = limit
+	}
+	if len(start)+len(limit) == 0 {
+		urange = nil
+	}
+
 	multiBulk := resp.ReplyMultiBulk{}
 	if size == 0 {
 		return multiBulk, nil
@@ -218,18 +230,24 @@ func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		size = toInteger(args[2])
-		fallthrough
+		size0, err := toInteger(args[2])
+		if err != nil {
+			return nil, err
+		}
+		size = size0
 	case 2:
-		start := toBytes(args[0])
-		limit := toBytes(args[1])
-		if len(start) != 0 {
-			urange.Start = bytesNext(start)
-		}
-		if len(limit) != 0 {
-			urange.Limit = bytesNext(limit)
-		}
+		// No action
 	}
+
+	start := toBytes(args[0])
+	limit := toBytes(args[1])
+	if len(start) != 0 {
+		urange.Start = bytesNext(start)
+	}
+	if len(limit) != 0 {
+		urange.Limit = bytesNext(limit)
+	}
+
 	multiBulk := resp.ReplyMultiBulk{}
 	if size == 0 {
 		return multiBulk, nil
@@ -266,20 +284,25 @@ func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		size = toInteger(args[2])
-		fallthrough
+		size0, err := toInteger(args[2])
+		if err != nil {
+			return nil, err
+		}
+		size = size0
 	case 2:
-		start := toBytes(args[1])
-		limit := toBytes(args[0])
-		if len(start) != 0 {
-			urange.Start = start
-		}
-		if len(limit) != 0 {
-			urange.Limit = limit
-		}
-		if len(start)+len(limit) == 0 {
-			urange = nil
-		}
+		// No action
+	}
+
+	start := toBytes(args[1])
+	limit := toBytes(args[0])
+	if len(start) != 0 {
+		urange.Start = start
+	}
+	if len(limit) != 0 {
+		urange.Limit = limit
+	}
+	if len(start)+len(limit) == 0 {
+		urange = nil
 	}
 	multiBulk := resp.ReplyMultiBulk{}
 	if size == 0 {
@@ -337,7 +360,10 @@ func (c *LevelDB) getbit(name string, args []resp.Reply) (resp.Reply, error) {
 		return nil, engine.ErrWrongNumberOfArguments
 	case 2:
 		key := toBytes(args[0])
-		offset := toInteger(args[1])
+		offset, err := toInteger(args[1])
+		if err != nil {
+			return nil, err
+		}
 		if offset < 0 {
 			return reply.Zero, nil
 		}
@@ -366,11 +392,17 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
 		key := toBytes(args[0])
-		offset := toInteger(args[1])
+		offset, err := toInteger(args[1])
+		if err != nil {
+			return nil, err
+		}
 		if offset < 0 {
 			return reply.Zero, nil
 		}
-		flag := toInteger(args[2])
+		flag, err := toInteger(args[2])
+		if err != nil {
+			return nil, err
+		}
 		newflage := flag != 0
 
 		tran, err := c.db.OpenTransaction()
