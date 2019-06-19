@@ -5,15 +5,8 @@ import (
 )
 
 var (
-	OK = resp.ReplyStatus("OK")
-)
-
-var (
+	OK   = resp.ReplyStatus("OK")
 	PONG = resp.ReplyStatus("PONG")
-	PING = resp.ReplyBulk("PING")
-)
-
-var (
 	Zero = resp.ReplyInteger("0")
 	One  = resp.ReplyInteger("1")
 )
