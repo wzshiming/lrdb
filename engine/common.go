@@ -19,9 +19,9 @@ func cmdQuit(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
-	un := time.Now().UnixNano()
-	nano := un % 1e9
-	unix := un / 1e9
+	un := time.Now()
+	nano := int64(un.Nanosecond())
+	unix := un.Unix()
 
 	return resp.Convert([]int64{
 		unix,
