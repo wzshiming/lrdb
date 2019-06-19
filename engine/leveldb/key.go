@@ -97,13 +97,28 @@ func (c *LevelDB) rename(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
+	tran, err := c.db.OpenTransaction()
+	if err != nil {
+		return nil, err
+	}
+	keys := make([][]byte, 0, len(args))
 	for _, arg := range args {
-		err := c.db.Delete(toBytes(arg), nil)
+		key := toBytes(arg)
+		val, err := tran.Has(key, nil)
+		if err != nil {
+			return nil, err
+		}
+		if val {
+			keys = append(keys, key)
+		}
+	}
+	for _, key := range keys {
+		err := tran.Delete(key, nil)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return resp.ConvertTo(len(args))
+	return resp.ConvertTo(len(keys))
 }
 
 func (c *LevelDB) exists(name string, args []resp.Reply) (resp.Reply, error) {
