@@ -79,11 +79,11 @@ func (c *LevelDB) rename(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = tran.Put(newKey, val, nil)
+		err = tran.Delete(key, nil)
 		if err != nil {
 			return nil, err
 		}
-		err = tran.Delete(key, nil)
+		err = tran.Put(newKey, val, nil)
 		if err != nil {
 			return nil, err
 		}
