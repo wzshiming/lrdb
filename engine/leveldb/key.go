@@ -421,6 +421,9 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 		oldflag := val[index]&off != 0
 		if newflage == oldflag {
 			tran.Discard()
+			if oldflag {
+				return reply.One, nil
+			}
 			return reply.Zero, nil
 		}
 		if newflage {
@@ -436,7 +439,10 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		return reply.One, nil
+		if oldflag {
+			return reply.One, nil
+		}
+		return reply.Zero, nil
 	}
 }
 
