@@ -498,7 +498,7 @@ func (c *LevelDB) append(name string, args []resp.Reply) (resp.Reply, error) {
 		if err != nil {
 			return nil, err
 		}
-		return reply.One, nil
+		return resp.ConvertTo(len(val))
 	}
 }
 
