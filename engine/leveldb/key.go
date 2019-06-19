@@ -1,6 +1,8 @@
 package leveldb
 
 import (
+	"math"
+
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"github.com/wzshiming/lrdb/engine"
 	"github.com/wzshiming/lrdb/reply"
@@ -332,26 +334,54 @@ func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func (c *LevelDB) bitcount(name string, args []resp.Reply) (resp.Reply, error) {
+
+	var start int64
+	var end int64 = math.MaxInt64 - 1
 	switch len(args) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
-	case 1:
-		key := toBytes(args[0])
-		val, err := c.db.Get(key, nil)
+	case 3:
+		start0, err := toInteger(args[1])
 		if err != nil {
-			return reply.Zero, nil
+			return nil, err
 		}
+		start = start0
+		end0, err := toInteger(args[2])
+		if err != nil {
+			return nil, err
+		}
+		end = end0
+	case 1:
+		// No action
+	}
 
-		var sum uint64
-		for _, v := range val {
-			for i := 0; i != 8; i++ {
-				if v&getBit(i) != 0 {
-					sum++
-				}
+	key := toBytes(args[0])
+	val, err := c.db.Get(key, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if start > end {
+		return reply.Zero, nil
+	}
+
+	if int64(len(val)) > end+1 {
+		val = val[:end+1]
+	}
+
+	if int64(len(val)) > start {
+		val = val[start:]
+	}
+
+	var sum uint64
+	for _, v := range val {
+		for i := 0; i != 8; i++ {
+			if v&getBit(i) != 0 {
+				sum++
 			}
 		}
-		return resp.ConvertTo(sum)
 	}
+	return resp.ConvertTo(sum)
 }
 
 func (c *LevelDB) getbit(name string, args []resp.Reply) (resp.Reply, error) {
