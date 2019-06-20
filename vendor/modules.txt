@@ -13,7 +13,7 @@ github.com/syndtr/goleveldb/leveldb/memdb
 github.com/syndtr/goleveldb/leveldb/opt
 github.com/syndtr/goleveldb/leveldb/storage
 github.com/syndtr/goleveldb/leveldb/table
-# github.com/wzshiming/resp v0.0.0-20190619061741-2f092a8ad328
+# github.com/wzshiming/resp v0.0.0-20190620042011-99e7b82ec488
 github.com/wzshiming/resp
 github.com/wzshiming/resp/client
 # gopkg.in/ffmt.v1 v1.5.3

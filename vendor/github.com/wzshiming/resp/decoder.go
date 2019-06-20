@@ -2,7 +2,7 @@ package resp
 
 import (
 	"bufio"
-	"fmt"
+	"bytes"
 	"io"
 	"strconv"
 	"unsafe"
@@ -47,7 +47,41 @@ func (r *Decoder) decodeData() (Reply, error) {
 	case Error:
 		return r.decodeError()
 	}
-	return nil, fmt.Errorf("errors protocol: undefined '%s'", string([]byte{ident}))
+	r.reader.UnreadByte()
+	e, err := r.decodeInline()
+	if err != nil {
+		return nil, err
+	}
+	if e != nil {
+		return e, nil
+	}
+	return r.decodeData()
+}
+
+func (r *Decoder) decodeInline() (Reply, error) {
+	line, err := r.decodeLine()
+	if err != nil {
+		return nil, err
+	}
+
+	data := ReplyMultiBulk{}
+	for len(line) != 0 {
+		if line[0] == ' ' {
+			line = line[1:]
+			continue
+		}
+		i := bytes.IndexByte(line, ' ')
+		if i == -1 {
+			data = append(data, ReplyBulk(line))
+			break
+		}
+		data = append(data, ReplyBulk(line[:i]))
+		line = line[i+1:]
+	}
+	if len(data) == 0 {
+		return nil, nil
+	}
+	return data, nil
 }
 
 func (r *Decoder) decodeLine() ([]byte, error) {
