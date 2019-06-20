@@ -224,9 +224,15 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func (c *LevelDB) exists(name string, args []resp.Reply) (resp.Reply, error) {
+	snap, err := c.db.GetSnapshot()
+	if err != nil {
+		return nil, err
+	}
+	defer snap.Release()
+
 	sum := 0
 	for _, arg := range args {
-		val, err := c.db.Has(toBytes(arg), nil)
+		val, err := snap.Has(toBytes(arg), nil)
 		if err != nil {
 			return nil, err
 		}
@@ -264,7 +270,13 @@ func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
 		return multiBulk, nil
 	}
 
-	iter := c.db.NewIterator(urange, nil)
+	snap, err := c.db.GetSnapshot()
+	if err != nil {
+		return nil, err
+	}
+	defer snap.Release()
+
+	iter := snap.NewIterator(urange, nil)
 	defer iter.Release()
 
 	if !iter.First() {
@@ -315,7 +327,14 @@ func (c *LevelDB) rkeys(name string, args []resp.Reply) (resp.Reply, error) {
 	if size == 0 {
 		return multiBulk, nil
 	}
-	iter := c.db.NewIterator(urange, nil)
+
+	snap, err := c.db.GetSnapshot()
+	if err != nil {
+		return nil, err
+	}
+	defer snap.Release()
+
+	iter := snap.NewIterator(urange, nil)
 	defer iter.Release()
 
 	if !iter.Last() {
@@ -363,7 +382,13 @@ func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
 		return multiBulk, nil
 	}
 
-	iter := c.db.NewIterator(urange, nil)
+	snap, err := c.db.GetSnapshot()
+	if err != nil {
+		return nil, err
+	}
+	defer snap.Release()
+
+	iter := snap.NewIterator(urange, nil)
 	defer iter.Release()
 
 	if !iter.First() {
@@ -415,7 +440,14 @@ func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
 	if size == 0 {
 		return multiBulk, nil
 	}
-	iter := c.db.NewIterator(urange, nil)
+
+	snap, err := c.db.GetSnapshot()
+	if err != nil {
+		return nil, err
+	}
+	defer snap.Release()
+
+	iter := snap.NewIterator(urange, nil)
 	defer iter.Release()
 
 	if !iter.Last() {
