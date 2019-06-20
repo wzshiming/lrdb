@@ -174,6 +174,37 @@ func (c *Client) StrLen(k string) (b int, err error) {
 	return b, c.Execute([]string{"strlen", k}, &b)
 }
 
+// Incr Increments the number stored at key by one.
+// If the key does not exist, it is set to 0 before performing the operation.
+// An error is returned if the key contains a value of the wrong type or contains a string
+// that can not be represented as integer.
+// This operation is limited to 64 bit signed integers.
+func (c *Client) Incr(k string) (b int, err error) {
+	return b, c.Execute([]interface{}{"incr", k}, &b)
+}
+
+// MSet Sets the given keys to their respective values.
+// MSET replaces existing values with new values, just as regular SET.
+// MSET is atomic, so all given keys are set at once.
+// It is not possible for clients to see that some of the keys were updated while others are unchanged.
+func (c *Client) MSet(m map[string]string) (err error) {
+	cmd := make([]string, 0, len(m)*2+1)
+	cmd = append(cmd, "mset")
+	for k, v := range m {
+		cmd = append(cmd, k, v)
+	}
+	return c.Execute(cmd, nil)
+}
+
+// IncrBy Increments the number stored at key by increment.
+// If the key does not exist, it is set to 0 before performing the operation.
+// An error is returned if the key contains a value of the wrong type or contains a string
+// that can not be represented as integer.
+// This operation is limited to 64 bit signed integers.
+func (c *Client) IncrBy(k string, v int) (b int, err error) {
+	return b, c.Execute([]interface{}{"incrby", k, v}, &b)
+}
+
 // Keys key-value pairs with keys in range (key_start, key_end]. ("", ""] means no range limit.
 func (c *Client) Keys(start, end string, limit int) (b []string, err error) {
 	return b, c.Execute([]interface{}{"keys", start, end, limit}, &b)

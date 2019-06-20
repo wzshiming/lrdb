@@ -38,6 +38,99 @@ func (c *LevelDB) set(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 }
 
+func (c *LevelDB) mset(name string, args []resp.Reply) (resp.Reply, error) {
+	if len(args) == 0 || len(args)%2 != 0 {
+		return nil, engine.ErrWrongNumberOfArguments
+	}
+	if len(args) == 2 {
+		return c.set(name, args)
+	}
+
+	tran, err := c.db.OpenTransaction()
+	if err != nil {
+		return nil, err
+	}
+	defer tran.Commit()
+
+	for i := 0; i != len(args); i += 2 {
+		key := toBytes(args[i])
+		val := toBytes(args[i+1])
+		err := tran.Put(key, val, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return reply.OK, nil
+
+}
+
+func (c *LevelDB) incr(name string, args []resp.Reply) (resp.Reply, error) {
+	switch len(args) {
+	default:
+		return nil, engine.ErrWrongNumberOfArguments
+	case 1:
+		key := toBytes(args[0])
+
+		tran, err := c.db.OpenTransaction()
+		if err != nil {
+			return nil, err
+		}
+		defer tran.Commit()
+
+		var value int64
+
+		if newVal, _ := tran.Get(key, nil); len(newVal) != 0 {
+			value, err = toInteger(newVal)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		value++
+		v := toBytes(value)
+		err = tran.Put(key, v, nil)
+		if err != nil {
+			return nil, err
+		}
+		return resp.ReplyInteger(v), nil
+	}
+}
+
+func (c *LevelDB) incrby(name string, args []resp.Reply) (resp.Reply, error) {
+	switch len(args) {
+	default:
+		return nil, engine.ErrWrongNumberOfArguments
+	case 2:
+		key := toBytes(args[0])
+		val, err := toInteger(args[1])
+		if err != nil {
+			return nil, err
+		}
+
+		tran, err := c.db.OpenTransaction()
+		if err != nil {
+			return nil, err
+		}
+		defer tran.Commit()
+
+		var value int64
+		if newVal, _ := tran.Get(key, nil); len(newVal) != 0 {
+			value, err = toInteger(newVal)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		value += val
+		v := toBytes(value)
+		err = tran.Put(key, v, nil)
+		if err != nil {
+			return nil, err
+		}
+		return resp.ReplyInteger(v), nil
+	}
+}
+
 func (c *LevelDB) getset(name string, args []resp.Reply) (resp.Reply, error) {
 	switch len(args) {
 	default:

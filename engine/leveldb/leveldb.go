@@ -38,6 +38,9 @@ func (c *LevelDB) Cmd() *engine.Commands {
 	commands.AddCommand("del", c.del)
 	commands.AddCommand("exists", c.exists)
 	commands.AddCommand("rename", c.rename)
+	commands.AddCommand("mset", c.mset)
+	commands.AddCommand("incr", c.incr)
+	commands.AddCommand("incrby", c.incrby)
 
 	commands.AddCommand("keys", c.keys)
 	commands.AddCommand("rkeys", c.rkeys)

@@ -2,6 +2,7 @@ package leveldb
 
 import (
 	"strconv"
+	"unsafe"
 
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"github.com/wzshiming/resp"
@@ -36,8 +37,13 @@ func bytesNext(data []byte) []byte {
 	return nil
 }
 
-func toBytes(r resp.Reply) []byte {
+func toBytes(r interface{}) []byte {
 	switch t := r.(type) {
+	case int64:
+		v := strconv.FormatInt(int64(t), 10)
+		return *(*[]byte)(unsafe.Pointer(&v))
+	case []byte:
+		return t
 	case resp.ReplyBulk:
 		return []byte(t)
 	case resp.ReplyInteger:
@@ -47,12 +53,13 @@ func toBytes(r resp.Reply) []byte {
 	}
 }
 
-func toInteger(r resp.Reply) (int64, error) {
+func toInteger(r interface{}) (int64, error) {
 	b := toBytes(r)
 	if b == nil {
 		return 0, nil
 	}
-	i, err := strconv.ParseInt(string(b), 0, 0)
+	v := *(*string)(unsafe.Pointer(&b))
+	i, err := strconv.ParseInt(v, 0, 0)
 	if err != nil {
 		return 0, err
 	}
