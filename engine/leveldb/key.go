@@ -57,6 +57,7 @@ func (c *LevelDB) mset(name string, args []resp.Reply) (resp.Reply, error) {
 		val := toBytes(args[i+1])
 		err := tran.Put(key, val, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 	}
@@ -82,6 +83,7 @@ func (c *LevelDB) incr(name string, args []resp.Reply) (resp.Reply, error) {
 		if newVal, _ := tran.Get(key, nil); len(newVal) != 0 {
 			value, err = toInteger(newVal)
 			if err != nil {
+				tran.Discard()
 				return nil, err
 			}
 		}
@@ -90,6 +92,7 @@ func (c *LevelDB) incr(name string, args []resp.Reply) (resp.Reply, error) {
 		v := toBytes(value)
 		err = tran.Put(key, v, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 		return resp.ReplyInteger(v), nil
@@ -117,6 +120,7 @@ func (c *LevelDB) incrby(name string, args []resp.Reply) (resp.Reply, error) {
 		if newVal, _ := tran.Get(key, nil); len(newVal) != 0 {
 			value, err = toInteger(newVal)
 			if err != nil {
+				tran.Discard()
 				return nil, err
 			}
 		}
@@ -125,6 +129,7 @@ func (c *LevelDB) incrby(name string, args []resp.Reply) (resp.Reply, error) {
 		v := toBytes(value)
 		err = tran.Put(key, v, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 		return resp.ReplyInteger(v), nil
@@ -148,6 +153,7 @@ func (c *LevelDB) getset(name string, args []resp.Reply) (resp.Reply, error) {
 
 		err = tran.Put(key, val, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 
@@ -170,14 +176,17 @@ func (c *LevelDB) rename(name string, args []resp.Reply) (resp.Reply, error) {
 
 		val, err := tran.Get(key, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 		err = tran.Delete(key, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 		err = tran.Put(newKey, val, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 
@@ -197,6 +206,7 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 		key := toBytes(arg)
 		val, err := tran.Has(key, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 		if val {
@@ -206,6 +216,7 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 	for _, key := range keys {
 		err := tran.Delete(key, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 	}
@@ -559,12 +570,10 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 		}
 		err = tran.Put(key, val, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
-		err = tran.Commit()
-		if err != nil {
-			return nil, err
-		}
+
 		if oldflag {
 			return reply.One, nil
 		}
@@ -590,6 +599,7 @@ func (c *LevelDB) append(name string, args []resp.Reply) (resp.Reply, error) {
 		val = append(val, str...)
 		err = tran.Put(key, val, nil)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 
