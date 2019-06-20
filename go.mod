@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/syndtr/goleveldb v1.0.0
-	github.com/wzshiming/resp v0.0.0-20190619061741-2f092a8ad328
+	github.com/wzshiming/resp v0.0.0-20190620042011-99e7b82ec488
+	golang.org/x/sys v0.0.0-20190619223125-e40ef342dc56 // indirect
 	gopkg.in/ffmt.v1 v1.5.3
 )
