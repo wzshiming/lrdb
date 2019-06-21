@@ -1,12 +1,11 @@
 # LRDB - A fast NoSQL database for storing big data
 
-LRDB is a high performace key-value NoSQL database, an alternative to Redis.
-
 ## Features
 
-* A redis-protocol compatible frontend to google's leveldb
-* Designed to store collection data
-* Persistent key-value storage
+* Is a high performace key-value NoSQL database.
+* LevelDB client-server support. Redis-protocol frontend to Google's LevelDB backend.
+* This is not a SQL database. It does not have a relational data model, it does not support SQL queries, and it has no support for indexes.
+* Implemented in golang, it supports all golang supported platforms and architectures.
 
 ## Usage
 
