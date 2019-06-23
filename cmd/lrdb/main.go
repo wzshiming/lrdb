@@ -8,8 +8,8 @@ import (
 	"github.com/wzshiming/lrdb/engine/leveldb"
 )
 
-var port = flag.String("port", ":10008", "Listen port")
-var path = flag.String("path", "./data", "Data path")
+var port = flag.String("p", ":10008", "Listen port")
+var path = flag.String("d", "./data", "Data path")
 
 func main() {
 	flag.Parse()
