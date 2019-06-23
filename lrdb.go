@@ -1,12 +1,15 @@
 package lrdb
 
 import (
+	"errors"
 	"log"
 	"net"
 	"os"
 
 	"github.com/wzshiming/resp"
 )
+
+var ErrQuit = errors.New("Quit")
 
 type LRDB struct {
 	engine Engine
@@ -53,6 +56,11 @@ func (db *LRDB) Handle(conn net.Conn) error {
 
 		result, err := db.engine.Cmd(reply)
 		if err != nil {
+			if err == ErrQuit {
+				db.logger.Println("Quit", addr)
+				encoder.Encode(result)
+				return nil
+			}
 			result = resp.ReplyError(err.Error())
 		}
 

@@ -22,7 +22,7 @@ func NewLevelDB(path string) (*LevelDB, error) {
 
 func (c *LevelDB) Cmd() *engine.Commands {
 	commands := engine.NewCommands(nil)
-	commands.Registe()
+
 	commands.AddCommand("info", c.info)
 
 	commands.AddCommand("getbit", c.getbit)

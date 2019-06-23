@@ -19,6 +19,7 @@ func NewCommands(ohter lrdb.CmdFunc) *Commands {
 		ohter:  ohter,
 		method: map[string]lrdb.CmdFunc{},
 	}
+	c.registe()
 	return c
 }
 

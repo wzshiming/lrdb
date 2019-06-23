@@ -3,6 +3,7 @@ package engine
 import (
 	"time"
 
+	"github.com/wzshiming/lrdb"
 	"github.com/wzshiming/lrdb/reply"
 	"github.com/wzshiming/resp"
 )
@@ -28,7 +29,7 @@ func (c *Commands) cmdPing(name string, args []resp.Reply) (resp.Reply, error) {
 }
 
 func (c *Commands) cmdQuit(name string, args []resp.Reply) (resp.Reply, error) {
-	return reply.OK, nil
+	return reply.OK, lrdb.ErrQuit
 }
 
 func (c *Commands) cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
@@ -42,7 +43,7 @@ func (c *Commands) cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
 	})
 }
 
-func (c *Commands) Registe() {
+func (c *Commands) registe() {
 	c.AddCommand("echo", c.cmdEcho)
 	c.AddCommand("ping", c.cmdPing)
 	c.AddCommand("quit", c.cmdQuit)
