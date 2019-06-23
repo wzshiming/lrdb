@@ -51,7 +51,7 @@ func (db *LRDB) Handle(conn net.Conn) error {
 			return err
 		}
 
-		result, err := db.engine.RawCmd(reply)
+		result, err := db.engine.Cmd(reply)
 		if err != nil {
 			result = resp.ReplyError(err.Error())
 		}

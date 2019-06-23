@@ -10,23 +10,23 @@ import (
 )
 
 type Commands struct {
-	method map[string]lrdb.Cmd
-	ohter  lrdb.Cmd
+	method map[string]lrdb.CmdFunc
+	ohter  lrdb.CmdFunc
 }
 
-func NewCommands(ohter lrdb.Cmd) *Commands {
+func NewCommands(ohter lrdb.CmdFunc) *Commands {
 	c := &Commands{
 		ohter:  ohter,
-		method: map[string]lrdb.Cmd{},
+		method: map[string]lrdb.CmdFunc{},
 	}
 	return c
 }
 
-func (c *Commands) AddCommand(name string, cmd lrdb.Cmd) {
+func (c *Commands) AddCommand(name string, cmd lrdb.CmdFunc) {
 	c.method[name] = cmd
 }
 
-func (c *Commands) RawCmd(r resp.Reply) (resp.Reply, error) {
+func (c *Commands) Cmd(r resp.Reply) (resp.Reply, error) {
 	switch t := r.(type) {
 	default:
 		return nil, ErrUnsupportedForm
@@ -38,24 +38,21 @@ func (c *Commands) RawCmd(r resp.Reply) (resp.Reply, error) {
 	}
 }
 
-func (c *Commands) Cmd(name string, args []resp.Reply) (resp.Reply, error) {
-	fun, ok := c.method[name]
-	if !ok {
-		if c.ohter != nil {
-			return c.ohter(name, args)
-		}
-		return nil, fmt.Errorf("Error Unknown Command '%s'", name)
-	}
-	return fun(name, args)
-}
-
 func (c *Commands) cmd(args []resp.Reply) (resp.Reply, error) {
 	switch t := args[0].(type) {
 	default:
 		return nil, ErrUnsupportedForm
 	case resp.ReplyBulk:
-		command := *(*string)(unsafe.Pointer(&t))
-		command = strings.ToLower(command)
-		return c.Cmd(command, args[1:])
+		name := *(*string)(unsafe.Pointer(&t))
+		name = strings.ToLower(name)
+		args = args[1:]
+		fun, ok := c.method[name]
+		if !ok {
+			if c.ohter != nil {
+				return c.ohter(name, args)
+			}
+			return nil, fmt.Errorf("Error Unknown Command '%s'", name)
+		}
+		return fun(name, args)
 	}
 }
