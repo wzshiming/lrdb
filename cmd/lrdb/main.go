@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/wzshiming/lrdb"
 	"github.com/wzshiming/lrdb/engine/leveldb"
-	"gopkg.in/ffmt.v1"
 )
 
 var port = flag.String("port", ":10008", "Listen port")
@@ -15,9 +15,9 @@ func main() {
 	flag.Parse()
 	db, err := leveldb.NewLevelDB(*path)
 	if err != nil {
-		ffmt.Mark(err)
+		fmt.Println(err)
 		return
 	}
-	err = lrdb.NewLRDB(db.Cmd()).Listen(*port)
-	ffmt.Mark(err)
+
+	lrdb.NewLRDB(db.Cmd()).Listen(*port)
 }
