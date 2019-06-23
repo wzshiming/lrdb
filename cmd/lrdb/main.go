@@ -19,5 +19,9 @@ func main() {
 		return
 	}
 
-	lrdb.NewLRDB(db.Cmd()).Listen(*port)
+	err = lrdb.NewLRDB(db.Cmd()).Listen(*port)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
