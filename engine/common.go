@@ -7,7 +7,7 @@ import (
 	"github.com/wzshiming/resp"
 )
 
-func cmdEcho(name string, args []resp.Reply) (resp.Reply, error) {
+func (c *Commands) cmdEcho(name string, args []resp.Reply) (resp.Reply, error) {
 	switch len(args) {
 	default:
 		return nil, ErrWrongNumberOfArguments
@@ -16,7 +16,7 @@ func cmdEcho(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 }
 
-func cmdPing(name string, args []resp.Reply) (resp.Reply, error) {
+func (c *Commands) cmdPing(name string, args []resp.Reply) (resp.Reply, error) {
 	switch len(args) {
 	default:
 		return nil, ErrWrongNumberOfArguments
@@ -27,11 +27,11 @@ func cmdPing(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 }
 
-func cmdQuit(name string, args []resp.Reply) (resp.Reply, error) {
+func (c *Commands) cmdQuit(name string, args []resp.Reply) (resp.Reply, error) {
 	return reply.OK, nil
 }
 
-func cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
+func (c *Commands) cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
 	un := time.Now()
 	nano := int64(un.Nanosecond())
 	unix := un.Unix()
@@ -42,9 +42,9 @@ func cmdTime(name string, args []resp.Reply) (resp.Reply, error) {
 	})
 }
 
-func Registe(commands *Commands) {
-	commands.AddCommand("echo", cmdEcho)
-	commands.AddCommand("ping", cmdPing)
-	commands.AddCommand("quit", cmdQuit)
-	commands.AddCommand("time", cmdTime)
+func (c *Commands) Registe() {
+	c.AddCommand("echo", c.cmdEcho)
+	c.AddCommand("ping", c.cmdPing)
+	c.AddCommand("quit", c.cmdQuit)
+	c.AddCommand("time", c.cmdTime)
 }
