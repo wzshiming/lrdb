@@ -2,6 +2,7 @@ package leveldb
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/storage"
 	"github.com/wzshiming/lrdb/engine"
 )
 
@@ -10,7 +11,15 @@ type LevelDB struct {
 }
 
 func NewLevelDB(path string) (*LevelDB, error) {
-	db, err := leveldb.RecoverFile(path, nil)
+	s, err := storage.OpenFile(path, false)
+	if err != nil {
+		return nil, err
+	}
+	return NewLevelDBWith(s)
+}
+
+func NewLevelDBWith(s storage.Storage) (*LevelDB, error) {
+	db, err := leveldb.Recover(s, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -18,6 +27,11 @@ func NewLevelDB(path string) (*LevelDB, error) {
 		db: db,
 	}
 	return c, nil
+}
+
+func NewLevelDBWithMemStorage() (*LevelDB, error) {
+	s := storage.NewMemStorage()
+	return NewLevelDBWith(s)
 }
 
 func (c *LevelDB) Cmd() *engine.Commands {
