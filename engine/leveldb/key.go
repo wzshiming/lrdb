@@ -14,7 +14,11 @@ func (c *LevelDB) get(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 1:
-		key := toBytes(args[0])
+		var key []byte
+		err := resp.ConvertFrom(args[0], &key)
+		if err != nil {
+			return nil, err
+		}
 		val, err := c.db.Get(key, nil)
 		if err != nil {
 			return nil, err
@@ -28,9 +32,18 @@ func (c *LevelDB) set(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 2:
-		key := toBytes(args[0])
-		val := toBytes(args[1])
-		err := c.db.Put(key, val, nil)
+		var key []byte
+		var val []byte
+		err := resp.ConvertFrom(args[0], &key)
+		if err != nil {
+			return nil, err
+		}
+		err = resp.ConvertFrom(args[1], &val)
+		if err != nil {
+			return nil, err
+		}
+
+		err = c.db.Put(key, val, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -53,9 +66,20 @@ func (c *LevelDB) mset(name string, args []resp.Reply) (resp.Reply, error) {
 	defer tran.Commit()
 
 	for i := 0; i != len(args); i += 2 {
-		key := toBytes(args[i])
-		val := toBytes(args[i+1])
-		err := tran.Put(key, val, nil)
+		var key []byte
+		var val []byte
+		err = resp.ConvertFrom(args[i], &key)
+		if err != nil {
+			tran.Discard()
+			return nil, err
+		}
+		err = resp.ConvertFrom(args[i+1], &val)
+		if err != nil {
+			tran.Discard()
+			return nil, err
+		}
+
+		err = tran.Put(key, val, nil)
 		if err != nil {
 			tran.Discard()
 			return nil, err
@@ -70,7 +94,12 @@ func (c *LevelDB) incr(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 1:
-		key := toBytes(args[0])
+
+		var key []byte
+		err := resp.ConvertFrom(args[0], &key)
+		if err != nil {
+			return nil, err
+		}
 
 		tran, err := c.db.OpenTransaction()
 		if err != nil {
@@ -78,24 +107,24 @@ func (c *LevelDB) incr(name string, args []resp.Reply) (resp.Reply, error) {
 		}
 		defer tran.Commit()
 
-		var value int64
-
-		if newVal, _ := tran.Get(key, nil); len(newVal) != 0 {
-			value, err = toInteger(newVal)
-			if err != nil {
-				tran.Discard()
-				return nil, err
-			}
-		}
-
-		value++
-		v := toBytes(value)
-		err = tran.Put(key, v, nil)
+		val, err := tran.Get(key, nil)
 		if err != nil {
 			tran.Discard()
 			return nil, err
 		}
-		return resp.ReplyInteger(v), nil
+
+		val, _, err = engine.IncrByInt64(val, 1)
+		if err != nil {
+			tran.Discard()
+			return nil, err
+		}
+
+		err = tran.Put(key, val, nil)
+		if err != nil {
+			tran.Discard()
+			return nil, err
+		}
+		return resp.ReplyInteger(val), nil
 	}
 }
 
@@ -104,8 +133,13 @@ func (c *LevelDB) incrby(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 2:
-		key := toBytes(args[0])
-		val, err := toInteger(args[1])
+		var key []byte
+		var inc int64
+		err := resp.ConvertFrom(args[0], &key)
+		if err != nil {
+			return nil, err
+		}
+		err = resp.ConvertFrom(args[1], &inc)
 		if err != nil {
 			return nil, err
 		}
@@ -116,23 +150,24 @@ func (c *LevelDB) incrby(name string, args []resp.Reply) (resp.Reply, error) {
 		}
 		defer tran.Commit()
 
-		var value int64
-		if newVal, _ := tran.Get(key, nil); len(newVal) != 0 {
-			value, err = toInteger(newVal)
-			if err != nil {
-				tran.Discard()
-				return nil, err
-			}
-		}
-
-		value += val
-		v := toBytes(value)
-		err = tran.Put(key, v, nil)
+		val, err := tran.Get(key, nil)
 		if err != nil {
 			tran.Discard()
 			return nil, err
 		}
-		return resp.ReplyInteger(v), nil
+
+		val, _, err = engine.IncrByInt64(val, inc)
+		if err != nil {
+			tran.Discard()
+			return nil, err
+		}
+
+		err = tran.Put(key, val, nil)
+		if err != nil {
+			tran.Discard()
+			return nil, err
+		}
+		return resp.ReplyInteger(val), nil
 	}
 }
 
@@ -141,8 +176,16 @@ func (c *LevelDB) getset(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 2:
-		key := toBytes(args[0])
-		val := toBytes(args[1])
+		var key []byte
+		var val []byte
+		err := resp.ConvertFrom(args[0], &key)
+		if err != nil {
+			return nil, err
+		}
+		err = resp.ConvertFrom(args[1], &val)
+		if err != nil {
+			return nil, err
+		}
 		tran, err := c.db.OpenTransaction()
 		if err != nil {
 			return nil, err
@@ -166,8 +209,16 @@ func (c *LevelDB) rename(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 2:
-		key := toBytes(args[0])
-		newKey := toBytes(args[1])
+		var key []byte
+		var newKey []byte
+		err := resp.ConvertFrom(args[0], &key)
+		if err != nil {
+			return nil, err
+		}
+		err = resp.ConvertFrom(args[1], &newKey)
+		if err != nil {
+			return nil, err
+		}
 		tran, err := c.db.OpenTransaction()
 		if err != nil {
 			return nil, err
@@ -203,7 +254,12 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 
 	keys := make([][]byte, 0, len(args))
 	for _, arg := range args {
-		key := toBytes(arg)
+		var key []byte
+		err := resp.ConvertFrom(arg, &key)
+		if err != nil {
+			return nil, err
+		}
+
 		val, err := tran.Has(key, nil)
 		if err != nil {
 			tran.Discard()
@@ -232,7 +288,13 @@ func (c *LevelDB) exists(name string, args []resp.Reply) (resp.Reply, error) {
 
 	sum := 0
 	for _, arg := range args {
-		val, err := snap.Has(toBytes(arg), nil)
+		var key []byte
+		err := resp.ConvertFrom(arg, &key)
+		if err != nil {
+			return nil, err
+		}
+
+		val, err := snap.Has(key, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -250,14 +312,25 @@ func (c *LevelDB) keys(name string, args []resp.Reply) (resp.Reply, error) {
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
 	}
-	size, err := toInteger(args[2])
+
+	var start []byte
+	var limit []byte
+	var size int64
+
+	err := resp.ConvertFrom(args[0], &start)
 	if err != nil {
 		return nil, err
 	}
-	urange := &util.Range{}
+	err = resp.ConvertFrom(args[1], &limit)
+	if err != nil {
+		return nil, err
+	}
+	err = resp.ConvertFrom(args[2], &size)
+	if err != nil {
+		return nil, err
+	}
 
-	start := toBytes(args[0])
-	limit := toBytes(args[1])
+	urange := &util.Range{}
 	if len(start) != 0 {
 		urange.Start = bytesNext(start)
 	}
@@ -305,22 +378,29 @@ func (c *LevelDB) rkeys(name string, args []resp.Reply) (resp.Reply, error) {
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
 	}
-	size, err := toInteger(args[2])
+	var start []byte
+	var limit []byte
+	var size int64
+
+	err := resp.ConvertFrom(args[0], &start)
 	if err != nil {
 		return nil, err
 	}
-	urange := &util.Range{}
+	err = resp.ConvertFrom(args[1], &limit)
+	if err != nil {
+		return nil, err
+	}
+	err = resp.ConvertFrom(args[2], &size)
+	if err != nil {
+		return nil, err
+	}
 
-	start := toBytes(args[1])
-	limit := toBytes(args[0])
+	urange := &util.Range{}
 	if len(start) != 0 {
 		urange.Start = start
 	}
 	if len(limit) != 0 {
 		urange.Limit = limit
-	}
-	if len(start)+len(limit) == 0 {
-		urange = nil
 	}
 
 	multiBulk := resp.ReplyMultiBulk{}
@@ -362,14 +442,24 @@ func (c *LevelDB) scan(name string, args []resp.Reply) (resp.Reply, error) {
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
 	}
-	size, err := toInteger(args[2])
+	var start []byte
+	var limit []byte
+	var size int64
+
+	err := resp.ConvertFrom(args[0], &start)
 	if err != nil {
 		return nil, err
 	}
-	urange := &util.Range{}
+	err = resp.ConvertFrom(args[1], &limit)
+	if err != nil {
+		return nil, err
+	}
+	err = resp.ConvertFrom(args[2], &size)
+	if err != nil {
+		return nil, err
+	}
 
-	start := toBytes(args[0])
-	limit := toBytes(args[1])
+	urange := &util.Range{}
 	if len(start) != 0 {
 		urange.Start = bytesNext(start)
 	}
@@ -419,23 +509,31 @@ func (c *LevelDB) rscan(name string, args []resp.Reply) (resp.Reply, error) {
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
 	}
-	size, err := toInteger(args[2])
+	var start []byte
+	var limit []byte
+	var size int64
+
+	err := resp.ConvertFrom(args[0], &start)
 	if err != nil {
 		return nil, err
 	}
-	urange := &util.Range{}
+	err = resp.ConvertFrom(args[1], &limit)
+	if err != nil {
+		return nil, err
+	}
+	err = resp.ConvertFrom(args[2], &size)
+	if err != nil {
+		return nil, err
+	}
 
-	start := toBytes(args[1])
-	limit := toBytes(args[0])
+	urange := &util.Range{}
 	if len(start) != 0 {
 		urange.Start = start
 	}
 	if len(limit) != 0 {
 		urange.Limit = limit
 	}
-	if len(start)+len(limit) == 0 {
-		urange = nil
-	}
+
 	multiBulk := resp.ReplyMultiBulk{}
 	if size == 0 {
 		return multiBulk, nil
@@ -478,21 +576,23 @@ func (c *LevelDB) bitcount(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		start0, err := toInteger(args[1])
+		err := resp.ConvertFrom(args[1], &start)
 		if err != nil {
 			return nil, err
 		}
-		start = start0
-		end0, err := toInteger(args[2])
+		err = resp.ConvertFrom(args[2], &end)
 		if err != nil {
 			return nil, err
 		}
-		end = end0
 	case 1:
 		// No action
 	}
+	var key []byte
+	err := resp.ConvertFrom(args[0], &key)
+	if err != nil {
+		return nil, err
+	}
 
-	key := toBytes(args[0])
 	val, err := c.db.Get(key, nil)
 	if err != nil {
 		return nil, err
@@ -509,15 +609,7 @@ func (c *LevelDB) bitcount(name string, args []resp.Reply) (resp.Reply, error) {
 	if int64(len(val)) > start {
 		val = val[start:]
 	}
-
-	var sum uint64
-	for _, v := range val {
-		for i := 0; i != 8; i++ {
-			if v&getBit(i) != 0 {
-				sum++
-			}
-		}
-	}
+	sum := engine.Bitcount(val)
 	return resp.ConvertTo(sum)
 }
 
@@ -526,31 +618,36 @@ func (c *LevelDB) getbit(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 2:
-		key := toBytes(args[0])
-		offset, err := toInteger(args[1])
-		if err != nil {
-			return nil, err
-		}
-		if offset < 0 {
-			return reply.Zero, nil
-		}
-		val, err := c.db.Get(key, nil)
-		if err != nil {
-			return reply.Zero, nil
-		}
-		index := offset / 8
+	}
 
-		if int64(len(val)) <= index {
-			return reply.Zero, nil
-		}
+	var key []byte
+	var offset int64
+	err := resp.ConvertFrom(args[0], &key)
+	if err != nil {
+		return nil, err
+	}
 
-		off := getBit(int(offset % 8))
+	err = resp.ConvertFrom(args[1], &offset)
+	if err != nil {
+		return nil, err
+	}
 
-		if val[index]&off == 0 {
-			return reply.Zero, nil
-		}
+	if offset < 0 {
+		return reply.Zero, nil
+	}
+	val, err := c.db.Get(key, nil)
+	if err != nil {
+		return reply.Zero, nil
+	}
+
+	b, err := engine.GetBit(val, offset)
+    if err != nil {
+		return reply.Zero, nil
+	}
+	if b {
 		return reply.One, nil
 	}
+	return reply.Zero, nil
 }
 
 func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
@@ -558,59 +655,54 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 3:
-		key := toBytes(args[0])
-		offset, err := toInteger(args[1])
-		if err != nil {
-			return nil, err
-		}
-		if offset < 0 {
-			return reply.Zero, nil
-		}
-		flag, err := toInteger(args[2])
-		if err != nil {
-			return nil, err
-		}
-		newflage := flag != 0
 
-		tran, err := c.db.OpenTransaction()
-		if err != nil {
-			return nil, err
-		}
-		defer tran.Commit()
+	}
 
-		val, _ := tran.Get(key, nil)
+	var key []byte
+	var offset int64
+	var flag int64
+	err := resp.ConvertFrom(args[0], &key)
+	if err != nil {
+		return nil, err
+	}
 
-		index := offset / 8
-		if s := 1 + index - int64(len(val)); s > 0 {
-			val = append(val, make([]byte, s)...)
-		}
+	err = resp.ConvertFrom(args[1], &offset)
+	if err != nil {
+		return nil, err
+	}
+	if offset < 0 {
+		return reply.Zero, nil
+	}
+	err = resp.ConvertFrom(args[2], &flag)
+	if err != nil {
+		return nil, err
+	}
+	newflage := flag != 0
 
-		off := getBit(int(offset % 8))
+	tran, err := c.db.OpenTransaction()
+	if err != nil {
+		return nil, err
+	}
+	defer tran.Commit()
 
-		oldflag := val[index]&off != 0
-		if newflage == oldflag {
-			tran.Discard()
-			if oldflag {
-				return reply.One, nil
-			}
-			return reply.Zero, nil
-		}
-		if newflage {
-			val[index] |= off
-		} else {
-			val[index] &= ^off
-		}
+	val, _ := tran.Get(key, nil)
+
+	val, ok, err := engine.SetBit(val, offset, newflage)
+	if err != nil {
+		return nil, err
+	}
+	if ok {
 		err = tran.Put(key, val, nil)
 		if err != nil {
 			tran.Discard()
 			return nil, err
 		}
 
-		if oldflag {
-			return reply.One, nil
-		}
+	}
+	if newflage {
 		return reply.Zero, nil
 	}
+	return reply.One, nil
 }
 
 func (c *LevelDB) append(name string, args []resp.Reply) (resp.Reply, error) {
@@ -618,25 +710,35 @@ func (c *LevelDB) append(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 2:
-		key := toBytes(args[0])
-		str := toBytes(args[1])
 
-		tran, err := c.db.OpenTransaction()
-		if err != nil {
-			return nil, err
-		}
-		defer tran.Commit()
-
-		val, _ := tran.Get(key, nil)
-		val = append(val, str...)
-		err = tran.Put(key, val, nil)
-		if err != nil {
-			tran.Discard()
-			return nil, err
-		}
-
-		return resp.ConvertTo(len(val))
 	}
+	var key []byte
+	var str []byte
+
+	err := resp.ConvertFrom(args[0], &key)
+	if err != nil {
+		return nil, err
+	}
+	err = resp.ConvertFrom(args[1], &str)
+	if err != nil {
+		return nil, err
+	}
+
+	tran, err := c.db.OpenTransaction()
+	if err != nil {
+		return nil, err
+	}
+	defer tran.Commit()
+
+	val, _ := tran.Get(key, nil)
+	val = append(val, str...)
+	err = tran.Put(key, val, nil)
+	if err != nil {
+		tran.Discard()
+		return nil, err
+	}
+
+	return resp.ConvertTo(len(val))
 }
 
 func (c *LevelDB) strlen(name string, args []resp.Reply) (resp.Reply, error) {
@@ -644,8 +746,13 @@ func (c *LevelDB) strlen(name string, args []resp.Reply) (resp.Reply, error) {
 	default:
 		return nil, engine.ErrWrongNumberOfArguments
 	case 1:
-		key := toBytes(args[0])
-		val, _ := c.db.Get(key, nil)
-		return resp.ConvertTo(len(val))
 	}
+
+	var key []byte
+	err := resp.ConvertFrom(args[0], &key)
+	if err != nil {
+		return nil, err
+	}
+	val, _ := c.db.Get(key, nil)
+	return resp.ConvertTo(len(val))
 }

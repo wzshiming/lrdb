@@ -1,11 +1,7 @@
 package leveldb
 
 import (
-	"strconv"
-	"unsafe"
-
 	"github.com/syndtr/goleveldb/leveldb/util"
-	"github.com/wzshiming/resp"
 )
 
 // bytesPrefix returns key range that satisfy the given prefix.
@@ -37,60 +33,8 @@ func bytesNext(data []byte) []byte {
 	return nil
 }
 
-func toBytes(r interface{}) []byte {
-	switch t := r.(type) {
-	case int64:
-		v := strconv.FormatInt(int64(t), 10)
-		return *(*[]byte)(unsafe.Pointer(&v))
-	case []byte:
-		return t
-	case resp.ReplyBulk:
-		return []byte(t)
-	case resp.ReplyInteger:
-		return []byte(t)
-	default:
-		return nil
-	}
-}
-
-func toInteger(r interface{}) (int64, error) {
-	b := toBytes(r)
-	if b == nil {
-		return 0, nil
-	}
-	v := *(*string)(unsafe.Pointer(&b))
-	i, err := strconv.ParseInt(v, 0, 0)
-	if err != nil {
-		return 0, err
-	}
-	return i, nil
-}
-
 func cloneBytes(data []byte) []byte {
 	buf := make([]byte, len(data))
 	copy(buf, data)
 	return buf
-}
-
-func getBit(i int) byte {
-	switch i {
-	default:
-		return 0
-	case 0:
-		return 1 << 7
-	case 1:
-		return 1 << 6
-	case 2:
-		return 1 << 5
-	case 3:
-		return 1 << 4
-	case 4:
-		return 1 << 3
-	case 5:
-		return 1 << 2
-	case 6:
-		return 1 << 1
-	case 7:
-		return 1 << 0
-	}
 }
