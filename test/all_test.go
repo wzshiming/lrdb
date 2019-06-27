@@ -1,4 +1,4 @@
-package lrdb
+package test
 
 import (
 	"fmt"
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/wzshiming/lrdb"
+	client "github.com/wzshiming/lrdb/client/lrdb"
 	"github.com/wzshiming/lrdb/engine/leveldb"
 	"github.com/wzshiming/lrdb/reply"
 	"github.com/wzshiming/resp"
@@ -88,7 +89,7 @@ func TestRename(t *testing.T) {
 }
 
 func testCommand(t *testing.T, name string, command []command) {
-	cli, err := NewClient(testAddress)
+	cli, err := client.NewClient(testAddress)
 	if err != nil {
 		t.Error(err)
 		return
