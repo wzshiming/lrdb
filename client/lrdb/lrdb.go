@@ -31,6 +31,15 @@ func NewClient(address string) (*Client, error) {
 	return c, nil
 }
 
+func (c *Client) Command(cmd string, args ...string) (resp.Reply, error) {
+	cc := append([]string{cmd}, args...)
+	data, err := resp.ConvertTo(cc)
+	if err != nil {
+		return nil, err
+	}
+	return c.Cmd(data)
+}
+
 // Execute execute a command
 func (c *Client) Execute(in, out interface{}) (err error) {
 	req, err := resp.ConvertTo(in)
