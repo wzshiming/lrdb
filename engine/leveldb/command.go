@@ -257,6 +257,7 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 		var key []byte
 		err := resp.ConvertFrom(arg, &key)
 		if err != nil {
+			tran.Discard()
 			return nil, err
 		}
 
@@ -265,6 +266,7 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 			tran.Discard()
 			return nil, err
 		}
+
 		if val {
 			keys = append(keys, key)
 		}
@@ -276,6 +278,7 @@ func (c *LevelDB) del(name string, args []resp.Reply) (resp.Reply, error) {
 			return nil, err
 		}
 	}
+
 	return resp.ConvertTo(len(keys))
 }
 
@@ -641,7 +644,7 @@ func (c *LevelDB) getbit(name string, args []resp.Reply) (resp.Reply, error) {
 	}
 
 	b, err := engine.GetBit(val, offset)
-    if err != nil {
+	if err != nil {
 		return reply.Zero, nil
 	}
 	if b {
@@ -689,6 +692,7 @@ func (c *LevelDB) setbit(name string, args []resp.Reply) (resp.Reply, error) {
 
 	val, ok, err := engine.SetBit(val, offset, newflage)
 	if err != nil {
+		tran.Discard()
 		return nil, err
 	}
 	if ok {
