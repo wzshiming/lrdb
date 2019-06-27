@@ -44,7 +44,7 @@ func TestGetSetDel(t *testing.T) {
 	sets := []command{}
 	gets := []command{}
 	keys := []string{}
-	for i := 0; i != 2; i++ {
+	for i := 0; i != 100; i++ {
 		r := rand.Int()
 		key := fmt.Sprintf("set_key_%d", r)
 		val := fmt.Sprintf("set_data_%d", r)
@@ -58,7 +58,7 @@ func TestGetSetDel(t *testing.T) {
 	}
 	tests := append(sets, gets...)
 
-	sort.StringsAreSorted(keys)
+	sort.Strings(keys)
 	keysV, _ := resp.ConvertTo(keys)
 	tests = append(tests, command{
 		[]string{"keys", "", "", strconv.FormatInt(int64(len(keys)), 10)}, keysV, false,
@@ -67,6 +67,8 @@ func TestGetSetDel(t *testing.T) {
 	size, _ := resp.ConvertTo(len(keys))
 	tests = append(tests, command{
 		append([]string{"del"}, keys...), size, false,
+	}, command{
+		append([]string{"del"}, keys...), reply.Zero, false,
 	})
 	testCommand(t, "getsetdel", tests)
 }
