@@ -1,5 +1,10 @@
 # LRDB - A fast NoSQL database for storing big data
 
+[![Build Status](https://travis-ci.org/wzshiming/lrdb.svg?branch=master)](https://travis-ci.org/wzshiming/lrdb)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wzshiming/lrdb)](https://goreportcard.com/report/github.com/wzshiming/lrdb)
+[![GoDoc](https://godoc.org/github.com/wzshiming/lrdb?status.svg)](https://godoc.org/github.com/wzshiming/lrdb)
+[![GitHub license](https://img.shields.io/github/license/wzshiming/lrdb.svg)](https://github.com/wzshiming/lrdb/blob/master/LICENSE)
+
 ## Features
 
 * Is a high performace key-value NoSQL database.
